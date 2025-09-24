@@ -2,11 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>My GitHub Website</title>
+  <title>Neat Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+      padding-top: 50px;
+    }
+    h1 {
+      color: #333;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007acc;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #005f99;
+    }
+    #box {
+      width: 100px;
+      height: 100px;
+      background-color: crimson;
+      margin: 30px auto;
+      border-radius: 10px;
+      transition: transform 0.3s, background-color 0.3s;
+    }
+  </style>
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <p>If you can read this, GitHub Pages is working.</p>
+  <h1>HTML + CSS + JavaScript Demo</h1>
+  <p>Click the button to make the box react:</p>
+  <div id="box"></div>
+  <button onclick="changeBox()">Click Me</button>
+
+  <script>
+    function changeBox() {
+      const box = document.getElementById("box");
+      // Pick random color and random rotation
+      const colors = ["crimson", "green", "blue", "purple", "orange"];
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      const randomAngle = Math.floor(Math.random() * 360);
+      box.style.backgroundColor = randomColor;
+      box.style.transform = `rotate(${randomAngle}deg) scale(1.2)`;
+      setTimeout(() => box.style.transform = "rotate(0deg) scale(1)", 500);
+    }
+  </script>
 </body>
 </html>
 
