@@ -1,59 +1,37 @@
+<!-- Super basic start for a website. First time doing web stuff. -->
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Neat Demo</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f0f0f0;
-      padding-top: 50px;
-    }
-    h1 {
-      color: #333;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 5px;
-      background-color: #007acc;
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background-color: #005f99;
-    }
-    #box {
-      width: 100px;
-      height: 100px;
-      background-color: crimson;
-      margin: 30px auto;
-      border-radius: 10px;
-      transition: transform 0.3s, background-color 0.3s;
-    }
-  </style>
-</head>
-<body>
-  <h1>HTML + CSS + JavaScript Demo</h1>
-  <p>Click the button to make the box react:</p>
-  <div id="box"></div>
-  <button onclick="changeBox()">Click Me</button>
 
-  <script>
-    function changeBox() {
-      const box = document.getElementById("box");
-      // Pick random color and random rotation
-      const colors = ["crimson", "green", "blue", "purple", "orange"];
-      const randomColor = colors[Math.floor(Math.random() * colors.length)];
-      const randomAngle = Math.floor(Math.random() * 360);
-      box.style.backgroundColor = randomColor;
-      box.style.transform = `rotate(${randomAngle}deg) scale(1.2)`;
-      setTimeout(() => box.style.transform = "rotate(0deg) scale(1)", 500);
-    }
-  </script>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nathanael Luke</title>
+  <link rel="stylesheet" href="style.css" />
+  <link 
+    rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+</head>
+
+<body>
+  <main>
+    <section id="about">
+      <h1>Nathanael Luke</h1>
+      <p>Computer Engineer with interest in C++.</p>
+      <div class="socials">
+        <a href="https://github.com/nathanaelluke" target="_blank" aria-label="GitHub">
+          <i class="fab fa-github"></i>
+        </a>
+        <a href="https://linkedin.com/in/nathanaelluke" target="_blank" aria-label="LinkedIn">
+          <i class="fab fa-linkedin"></i>
+        </a>
+        <a href="mailto:njluke@cedarville.edu" aria-label="Email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </div>
+    </section>
+  <script src="script.js"></script>
 </body>
 </html>
 
