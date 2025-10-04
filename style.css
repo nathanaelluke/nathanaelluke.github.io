@@ -7,15 +7,30 @@
 
 body {
   line-height: 1.6;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  padding-top: env(safe-area-inset-top);
   background-image: url('AvPass.jpeg');
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;;
-  min-height: 70dvh; /* prefer dynamic viewport */
+  min-height: 100dvh;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
   background-size: cover;
   background-repeat: no-repeat;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url('AvPass.jpeg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  z-index: -1; 
 }
 
 header {
