@@ -6,16 +6,16 @@
 }
 
 body {
-  background: #f4f4f4;
-  color: #333;
   line-height: 1.6;
   background-image: url('AvPass.jpeg');
   background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-position: 50% 50%;
   background-size: cover;
+  background-position: center;;
+  min-height: 70dvh; /* prefer dynamic viewport */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 header {
@@ -82,10 +82,18 @@ footer {
 #about {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  height: 80vh; /* centers vertically */
   text-align: center;
+  min-height: 100dvh;
+  justify-content: flex-start;
+  padding-top: 35vh; /* pushes content down, about 70% up page */
+}
+
+@keyframes jiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  50% { transform: rotate(-5deg); }
+  75% { transform: rotate(3deg); }
 }
 
 .socials {
@@ -101,5 +109,6 @@ footer {
 }
 
 .socials a:hover {
-  color: #1da1f2; /* change on hover */
+  animation: jiggle 0.3s ease-in-out 0.1s;
+  color: #2e5b77;
 }
