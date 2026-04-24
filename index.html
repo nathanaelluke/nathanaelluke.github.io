@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Nathanael Luke</title>
+    <meta name="description" content="Personal site." />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body class="home-page">
+    <main class="site-shell">
+      <section class="ascii-layout" aria-labelledby="site-title">
+        <div class="content-column">
+          <h1 id="site-title">nathanael luke</h1>
+          <p class="lede">computer engineer</p>
+
+          <pre class="ascii-block" aria-label="Interests and links">
+---------
+<a class="topic-link" href="cpp.html">c++ / cuda</a>
+<a class="topic-link" href="signal-processing.html">signal processing</a>
+<a class="topic-link" href="technical-fundamentals.html">technical fundamentals</a>
+
+---------
+<a href="https://github.com/nathanaelluke" target="_blank" rel="noreferrer">github</a>
+<a href="https://linkedin.com/in/nathanaelluke" target="_blank" rel="noreferrer">linkedin</a>
+<a href="mailto:njluke@cedarville.edu">email</a>
+      </pre>
+
+          <section class="signal-lab" aria-label="Fourier series plots">
+            <div class="signal-head">
+              <div class="signal-control">
+                <label for="harmonic-count">k harmonics</label>
+                <div class="signal-slider-wrap">
+                  <output id="harmonic-value" for="harmonic-count">9</output>
+                  <input
+                    id="harmonic-count"
+                    type="range"
+                    min="1"
+                    max="10"
+                    value="5"
+                    step="1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="signal-grid">
+              <figure class="signal-panel">
+                <figcaption>x(t)</figcaption>
+                <pre
+                  id="time-domain-plot"
+                  class="signal-plot"
+                  aria-label="Time-domain plot of a partial Fourier-series square-wave approximation"
+                ></pre>
+              </figure>
+
+              <figure class="signal-panel">
+                <figcaption>|x(f)|</figcaption>
+                <pre
+                  id="frequency-domain-plot"
+                  class="signal-plot"
+                  aria-label="Frequency-domain stem plot of odd harmonic amplitudes"
+                ></pre>
+              </figure>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
