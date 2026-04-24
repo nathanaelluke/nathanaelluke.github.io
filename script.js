@@ -1,8 +1,7 @@
-const oddHarmonics = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+const frequencyHarmonics = Array.from({ length: 10 }, (_, index) => index * 2 + 1);
 
 const harmonicInput = document.getElementById("harmonic-count");
-const harmonicValue = document.getElementById("harmonic-value");
-const harmonicSliderWrap = harmonicInput.parentElement;
+const harmonicStepButtons = document.querySelectorAll("[data-harmonic-step]");
 const timeDomainPlot = document.getElementById("time-domain-plot");
 const frequencyDomainPlot = document.getElementById("frequency-domain-plot");
 
@@ -17,6 +16,9 @@ const VISUAL_PLOT_PADDING = 14;
 const TAU = 2 * Math.PI;
 const WAVE_SCROLL_SECONDS = 10;
 const TARGET_FRAME_INTERVAL = 1000 / 30;
+const minHarmonicValue = 1;
+const maxHarmonicValue = 99;
+const idealSquareWaveStart = 61;
 
 const timeConfig = {
   cellsWide: 68,
@@ -172,27 +174,28 @@ function renderLabeledRows(title, plotRows, config, labels, footerEntries) {
   return output.join("\n");
 }
 
-function partialSquareWave(termCount, sampleCount = 512) {
-  const t = [];
-  const y = new Array(sampleCount).fill(0);
-  const activeHarmonics = oddHarmonics.slice(0, termCount);
+function squareWaveHarmonics(harmonicLimit) {
+  const harmonics = [];
 
-  for (let i = 0; i < sampleCount; i += 1) {
-    const time = ((2 * Math.PI) * i) / (sampleCount - 1);
-    t.push(time);
-
-    for (const harmonic of activeHarmonics) {
-      y[i] += Math.sin(harmonic * time) / harmonic;
-    }
+  for (let harmonic = 1; harmonic <= harmonicLimit; harmonic += 2) {
+    harmonics.push(harmonic);
   }
 
-  return { t, y, activeHarmonics };
+  return harmonics;
 }
 
-function partialSquareWaveValue(time, activeHarmonics) {
+function createSquareWaveSignal(harmonicLimit) {
+  return {
+    harmonicLimit,
+    activeHarmonics: squareWaveHarmonics(harmonicLimit),
+    useIdealWave: harmonicLimit >= idealSquareWaveStart,
+  };
+}
+
+function partialSquareWaveValue(time, signal) {
   let value = 0;
 
-  for (const harmonic of activeHarmonics) {
+  for (const harmonic of signal.activeHarmonics) {
     value += Math.sin(harmonic * time) / harmonic;
   }
 
@@ -200,12 +203,36 @@ function partialSquareWaveValue(time, activeHarmonics) {
 }
 
 function frequencyStemColumn(harmonic, width) {
-  const harmonicIndex = oddHarmonics.indexOf(harmonic);
+  const harmonicIndex = frequencyHarmonics.indexOf(harmonic);
   const firstColumn = 4;
   const lastColumn = width - 2;
-  const columnStep = Math.floor((lastColumn - firstColumn) / (oddHarmonics.length - 1));
+  const columnStep = Math.floor(
+    (lastColumn - firstColumn) / (frequencyHarmonics.length - 1),
+  );
 
   return Math.min(lastColumn, firstColumn + harmonicIndex * columnStep);
+}
+
+function normalizePhase(time) {
+  return ((time % TAU) + TAU) % TAU;
+}
+
+function drawIdealSquareWave(canvas, yHigh, yLow, phase) {
+  const pixelWidth = canvas[0].length;
+  let previousRow = null;
+
+  for (let pixelColumn = 0; pixelColumn < pixelWidth; pixelColumn += 1) {
+    const time = (TAU * (pixelColumn + 0.5)) / pixelWidth + phase;
+    const pixelRow = normalizePhase(time) < Math.PI ? yHigh : yLow;
+
+    setPixel(canvas, pixelColumn, pixelRow);
+
+    if (previousRow !== null && previousRow !== pixelRow) {
+      drawVerticalLine(canvas, pixelColumn, previousRow, pixelRow);
+    }
+
+    previousRow = pixelRow;
+  }
 }
 
 function composeTimeRows(waveRows, xAxisRow, signalWidth) {
@@ -226,22 +253,28 @@ function renderTimeDomain(signal, phase = 0) {
   const yLimit = timeConfig.yLimit;
   const xAxisY = Math.round(mapRange(0, -yLimit, yLimit, pixelHeight - 1, 0));
   const xAxisRow = Math.floor(xAxisY / 4);
+  const yHigh = Math.round(mapRange(1, -yLimit, yLimit, pixelHeight - 1, 0));
+  const yLow = Math.round(mapRange(-1, -yLimit, yLimit, pixelHeight - 1, 0));
 
-  let previousPoint = null;
+  if (signal.useIdealWave) {
+    drawIdealSquareWave(canvas, yHigh, yLow, phase);
+  } else {
+    let previousPoint = null;
 
-  for (let pixelColumn = 0; pixelColumn < pixelWidth; pixelColumn += 1) {
-    const time = (TAU * pixelColumn) / (pixelWidth - 1) + phase;
-    const value = partialSquareWaveValue(time, signal.activeHarmonics);
+    for (let pixelColumn = 0; pixelColumn < pixelWidth; pixelColumn += 1) {
+      const time = (TAU * pixelColumn) / (pixelWidth - 1) + phase;
+      const value = partialSquareWaveValue(time, signal);
 
-    const pixelRow = Math.round(
-      mapRange(value, -yLimit, yLimit, pixelHeight - 1, 0),
-    );
+      const pixelRow = Math.round(
+        mapRange(value, -yLimit, yLimit, pixelHeight - 1, 0),
+      );
 
-    if (previousPoint) {
-      drawLine(canvas, previousPoint.x, previousPoint.y, pixelColumn, pixelRow);
+      if (previousPoint) {
+        drawLine(canvas, previousPoint.x, previousPoint.y, pixelColumn, pixelRow);
+      }
+
+      previousPoint = { x: pixelColumn, y: pixelRow };
     }
-
-    previousPoint = { x: pixelColumn, y: pixelRow };
   }
 
   const waveRows = pixelCanvasToBrailleRows(canvas);
@@ -286,11 +319,14 @@ function renderFrequencyDomain(activeHarmonics) {
     rows[baselineRow][column] = "-";
   }
 
-  for (const harmonic of oddHarmonics) {
+  for (const harmonic of frequencyHarmonics) {
     const column = frequencyStemColumn(harmonic, width);
-    const stemHeight = Math.max(1, Math.round(mapRange(1 / harmonic, 0, 1, 1, height - 2)));
 
     if (activeHarmonics.includes(harmonic)) {
+      const stemHeight = Math.max(
+        1,
+        Math.round(mapRange(1 / harmonic, 0, 1, 1, height - 2)),
+      );
       const shiftedHalfStepLeft =
         harmonic === 7 || harmonic === 9 || harmonic === 11 || harmonic === 13;
       const shiftedHalfStepRight = harmonic === 15;
@@ -310,7 +346,7 @@ function renderFrequencyDomain(activeHarmonics) {
     [0, "1"],
     [frequencyConfig.cellsHigh - 1, "0"],
   ];
-  const footerEntries = oddHarmonics.map((harmonic) => {
+  const footerEntries = frequencyHarmonics.map((harmonic) => {
     const label = String(harmonic);
     const footerOffset =
       harmonic >= 15 ? 2 : harmonic === 11 || harmonic >= 13 ? 1 : 0;
@@ -335,20 +371,68 @@ let animationPhase = 0;
 let previousAnimationTime = null;
 let lastFrameTime = 0;
 
-function render() {
-  const termCount = Number(harmonicInput.value);
-  const signal = partialSquareWave(termCount);
-  const maxHarmonic = signal.activeHarmonics[signal.activeHarmonics.length - 1];
-  const sliderMin = Number(harmonicInput.min);
-  const sliderMax = Number(harmonicInput.max);
-  const sliderRange = Math.max(1, sliderMax - sliderMin);
-  const sliderPosition = ((termCount - sliderMin) / sliderRange) * 100;
+function clampHarmonicValue(harmonicValue) {
+  const clampedHarmonic = Math.max(
+    minHarmonicValue,
+    Math.min(maxHarmonicValue, harmonicValue),
+  );
 
-  harmonicValue.textContent = String(maxHarmonic);
-  harmonicSliderWrap.style.setProperty("--slider-position", `${sliderPosition}%`);
+  return clampedHarmonic % 2 === 0 ? clampedHarmonic - 1 : clampedHarmonic;
+}
+
+function harmonicValueFromInput(value) {
+  const harmonicValue = Number.parseInt(value, 10);
+
+  if (!Number.isFinite(harmonicValue)) {
+    return null;
+  }
+
+  return clampHarmonicValue(harmonicValue);
+}
+
+function updateHarmonicButtons(harmonicLimit) {
+  harmonicStepButtons.forEach((button) => {
+    const step = Number(button.dataset.harmonicStep);
+    button.disabled =
+      harmonicLimit + step < minHarmonicValue ||
+      harmonicLimit + step > maxHarmonicValue;
+  });
+}
+
+function renderHarmonicLimit(harmonicLimit) {
+  const resolvedHarmonicLimit = clampHarmonicValue(harmonicLimit);
+  const signal = createSquareWaveSignal(resolvedHarmonicLimit);
+
   activeSignal = signal;
+  updateHarmonicButtons(resolvedHarmonicLimit);
   renderTimeDomain(activeSignal, animationPhase);
   renderFrequencyDomain(signal.activeHarmonics);
+}
+
+function render() {
+  const harmonicLimit = harmonicValueFromInput(harmonicInput.value);
+
+  if (harmonicLimit === null) {
+    return;
+  }
+
+  renderHarmonicLimit(harmonicLimit);
+}
+
+function commitHarmonicInput() {
+  const harmonicLimit =
+    harmonicValueFromInput(harmonicInput.value) ?? minHarmonicValue;
+  harmonicInput.value = String(harmonicLimit);
+  renderHarmonicLimit(harmonicLimit);
+}
+
+function stepHarmonicInput(step) {
+  const harmonicLimit =
+    harmonicValueFromInput(harmonicInput.value) ?? minHarmonicValue;
+  const nextHarmonicLimit = clampHarmonicValue(harmonicLimit + step);
+
+  harmonicInput.value = String(nextHarmonicLimit);
+  renderHarmonicLimit(nextHarmonicLimit);
 }
 
 function animateTimeDomain(timestamp) {
@@ -369,5 +453,17 @@ function animateTimeDomain(timestamp) {
 }
 
 harmonicInput.addEventListener("input", render);
+harmonicInput.addEventListener("blur", commitHarmonicInput);
+harmonicInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    commitHarmonicInput();
+    harmonicInput.blur();
+  }
+});
+harmonicStepButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    stepHarmonicInput(Number(button.dataset.harmonicStep));
+  });
+});
 render();
 requestAnimationFrame(animateTimeDomain);
