@@ -14,6 +14,9 @@ const BRAILLE_BITS = [
 ];
 const BRAILLE_BLANK = String.fromCharCode(0x2800);
 const VISUAL_PLOT_PADDING = 14;
+const TAU = 2 * Math.PI;
+const WAVE_SCROLL_SECONDS = 10;
+const TARGET_FRAME_INTERVAL = 1000 / 30;
 
 const timeConfig = {
   cellsWide: 68,
@@ -145,23 +148,6 @@ function pixelCanvasToBrailleRows(canvas) {
   return rows;
 }
 
-function rightmostSignalColumn(plotRows) {
-  let rightmost = -1;
-
-  for (const row of plotRows) {
-    const chars = Array.from(row);
-
-    for (let column = chars.length - 1; column >= 0; column -= 1) {
-      if (chars[column] !== BRAILLE_BLANK) {
-        rightmost = Math.max(rightmost, column);
-        break;
-      }
-    }
-  }
-
-  return rightmost;
-}
-
 function renderLabeledRows(title, plotRows, config, labels, footerEntries) {
   const output = title ? [title] : [];
   const labelLookup = new Map(labels);
@@ -233,24 +219,19 @@ function composeTimeRows(waveRows, xAxisRow, signalWidth) {
   });
 }
 
-function renderTimeDomain(signal) {
+function renderTimeDomain(signal, phase = 0) {
   const pixelWidth = plotPixelWidth(timeConfig);
   const pixelHeight = plotPixelHeight(timeConfig);
   const canvas = createPixelCanvas(pixelWidth, pixelHeight);
   const yLimit = timeConfig.yLimit;
   const xAxisY = Math.round(mapRange(0, -yLimit, yLimit, pixelHeight - 1, 0));
   const xAxisRow = Math.floor(xAxisY / 4);
-  const piPixelX = Math.round((pixelWidth - 1) / 2);
 
   let previousPoint = null;
 
   for (let pixelColumn = 0; pixelColumn < pixelWidth; pixelColumn += 1) {
-    const time = ((2 * Math.PI) * pixelColumn) / (pixelWidth - 1);
-    let value = partialSquareWaveValue(time, signal.activeHarmonics);
-
-    if (pixelColumn === 0 || pixelColumn === piPixelX || pixelColumn === pixelWidth - 1) {
-      value = 0;
-    }
+    const time = (TAU * pixelColumn) / (pixelWidth - 1) + phase;
+    const value = partialSquareWaveValue(time, signal.activeHarmonics);
 
     const pixelRow = Math.round(
       mapRange(value, -yLimit, yLimit, pixelHeight - 1, 0),
@@ -264,10 +245,12 @@ function renderTimeDomain(signal) {
   }
 
   const waveRows = pixelCanvasToBrailleRows(canvas);
-  const signalWidth = Math.max(1, rightmostSignalColumn(waveRows) + 1);
-  const piColumn = Math.round((signalWidth - 1) / 2);
+  const signalWidth = timeConfig.cellsWide;
   const axisWidth = signalWidth + VISUAL_PLOT_PADDING;
-  const twoPiColumn = Math.max(piColumn + 2, axisWidth - "2pi".length);
+  const piLabel = "pi";
+  const twoPiLabel = "2pi";
+  const piColumn = Math.round(axisWidth / 2 - piLabel.length / 2);
+  const twoPiColumn = axisWidth - Math.floor(twoPiLabel.length / 2);
   const rows = composeTimeRows(waveRows, xAxisRow, signalWidth);
   const labels = [
     [0, "1"],
@@ -275,9 +258,8 @@ function renderTimeDomain(signal) {
     [timeConfig.cellsHigh - 1, "-1"],
   ];
   const footerEntries = [
-    [0, "0"],
-    [piColumn, "pi"],
-    [twoPiColumn, "2pi"],
+    [piColumn, piLabel],
+    [twoPiColumn, twoPiLabel],
   ];
 
   timeDomainPlot.textContent = renderLabeledRows(
@@ -348,6 +330,11 @@ function renderFrequencyDomain(activeHarmonics) {
   );
 }
 
+let activeSignal = null;
+let animationPhase = 0;
+let previousAnimationTime = null;
+let lastFrameTime = 0;
+
 function render() {
   const termCount = Number(harmonicInput.value);
   const signal = partialSquareWave(termCount);
@@ -359,9 +346,28 @@ function render() {
 
   harmonicValue.textContent = String(maxHarmonic);
   harmonicSliderWrap.style.setProperty("--slider-position", `${sliderPosition}%`);
-  renderTimeDomain(signal);
+  activeSignal = signal;
+  renderTimeDomain(activeSignal, animationPhase);
   renderFrequencyDomain(signal.activeHarmonics);
+}
+
+function animateTimeDomain(timestamp) {
+  if (previousAnimationTime === null) {
+    previousAnimationTime = timestamp;
+  }
+
+  const elapsed = Math.min(timestamp - previousAnimationTime, 100);
+  previousAnimationTime = timestamp;
+  animationPhase = (animationPhase + (elapsed / 1000) * (TAU / WAVE_SCROLL_SECONDS)) % TAU;
+
+  if (timestamp - lastFrameTime >= TARGET_FRAME_INTERVAL) {
+    renderTimeDomain(activeSignal, animationPhase);
+    lastFrameTime = timestamp;
+  }
+
+  requestAnimationFrame(animateTimeDomain);
 }
 
 harmonicInput.addEventListener("input", render);
 render();
+requestAnimationFrame(animateTimeDomain);

@@ -9,9 +9,12 @@
   --space-lg: clamp(6rem, 18vh, 10rem);
   --layout-frame-space: clamp(2.75rem, 9vh, 6rem);
   --layout-frame-space-mobile: clamp(1.75rem, 6vh, 3rem);
-  --signal-plot-width-ch: 83;
-  --signal-slider-width-ch: 68;
-  --signal-axis-offset-ch: 1;
+  --signal-plot-font-family: "DejaVu Sans Mono", "Noto Sans Mono", Consolas,
+    monospace;
+  --signal-plot-font-size: clamp(0.68rem, 0.92vw, 0.8rem);
+  --signal-plot-width-ch: 85;
+  --signal-axis-offset-ch: 5;
+  --page-column-width: clamp(35rem, 47vw, 41rem);
 }
 
 * {
@@ -69,7 +72,7 @@ a:hover {
 .content-column {
   display: flex;
   flex-direction: column;
-  width: fit-content;
+  width: min(100%, var(--page-column-width));
   max-width: 100%;
   min-height: 100%;
   margin: 0 auto;
@@ -127,7 +130,7 @@ h1 {
 }
 
 .resource-column {
-  width: min(100%, 42rem);
+  width: min(100%, var(--page-column-width));
 }
 
 .back-link {
@@ -248,24 +251,27 @@ h1 {
 .signal-control {
   display: grid;
   gap: 0.35rem;
+  font-family: var(--signal-plot-font-family);
+  font-size: var(--signal-plot-font-size);
+  margin-left: calc(var(--signal-axis-offset-ch) * -1ch);
   width: calc(
-    (var(--signal-slider-width-ch) + var(--signal-axis-offset-ch)) * 1ch
+    (var(--signal-plot-width-ch) + var(--signal-axis-offset-ch)) * 1ch
   );
 }
 
 .signal-control label,
 .signal-slider-wrap output {
-  font-size: 0.84rem;
+  font-size: inherit;
 }
 
 .signal-control label {
   color: var(--muted);
-  margin-left: 1ch;
+  margin-left: calc(var(--signal-axis-offset-ch) * 1ch);
 }
 
 .signal-slider-wrap {
   position: relative;
-  width: calc(var(--signal-slider-width-ch) * 1ch);
+  width: calc(var(--signal-plot-width-ch) * 1ch);
   margin-left: calc(var(--signal-axis-offset-ch) * 1ch);
   padding-top: 0.95rem;
 }
@@ -439,12 +445,12 @@ h1 {
 }
 
 .signal-plot {
-  margin: 0;
+  margin: 0 0 0 calc(var(--signal-axis-offset-ch) * -1ch);
   overflow-x: auto;
   overflow-y: hidden;
   color: var(--text);
-  font-family: "DejaVu Sans Mono", "Noto Sans Mono", Consolas, monospace;
-  font-size: clamp(0.68rem, 0.92vw, 0.8rem);
+  font-family: var(--signal-plot-font-family);
+  font-size: var(--signal-plot-font-size);
   line-height: 1.02;
   letter-spacing: 0;
   white-space: pre;
@@ -455,7 +461,7 @@ h1 {
   .signal-control {
     width: min(
       100%,
-      calc((var(--signal-slider-width-ch) + var(--signal-axis-offset-ch)) * 1ch)
+      calc((var(--signal-plot-width-ch) + var(--signal-axis-offset-ch)) * 1ch)
     );
   }
 
@@ -471,14 +477,19 @@ h1 {
 
   .home-page .ascii-layout {
     padding-bottom: var(--layout-frame-space-mobile);
+    justify-content: center;
+  }
+
+  .home-page .content-column {
+    min-height: auto;
   }
 
   .resource-column {
     width: 100%;
   }
 
-  .signal-lab {
-    padding-top: clamp(3.75rem, 12vh, 5.5rem);
+  .home-page .signal-lab {
+    display: none;
   }
 
   .signal-plot {
