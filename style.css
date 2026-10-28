@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Signal Plot Mono";
+  src: url("fonts/signal-plot-mono.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
   --bg: #0b0d0e;
@@ -6,20 +14,15 @@
   --space-xs: 0.5rem;
   --space-sm: 1rem;
   --space-md: 1.5rem;
-  --space-lg: clamp(6rem, 18vh, 10rem);
   --shell-block-space: 1.5rem;
-  --layout-frame-space: clamp(2.75rem, 9vh, 6rem);
-  --layout-frame-space-mobile: clamp(1.75rem, 6vh, 3rem);
-  --page-inline-space: calc(var(--shell-block-space) + var(--layout-frame-space));
-  --page-inline-space-mobile: calc(
-    var(--shell-block-space) + var(--layout-frame-space-mobile)
-  );
-  --signal-plot-font-family: "DejaVu Sans Mono", "Noto Sans Mono", Consolas,
-    monospace;
+  --layout-frame-space: clamp(1.75rem, 6dvh, 4rem);
+  --page-inline-space: clamp(2rem, 6vw, 4rem);
+  --home-block-space: clamp(1.5rem, 5dvh, 3rem);
+  --home-section-gap: clamp(2rem, 5dvh, 4rem);
+  --signal-plot-font-family: "Signal Plot Mono", "DejaVu Sans Mono", "Noto Sans Mono",
+    Consolas, monospace;
   --signal-plot-font-size: clamp(0.68rem, 0.92vw, 0.8rem);
-  --signal-plot-width-ch: 85;
   --signal-axis-offset-ch: 5;
-  --signal-bottom-offset: calc(var(--layout-frame-space) + 1.25rem);
   --page-column-width: clamp(35rem, 47vw, 41rem);
 }
 
@@ -86,9 +89,14 @@ a:hover {
 }
 
 .home-page .ascii-layout {
-  padding-top: var(--layout-frame-space-mobile);
-  padding-bottom: var(--layout-frame-space-mobile);
+  min-height: 0;
+  padding: 0;
   justify-content: center;
+}
+
+.home-page .site-shell {
+  padding-top: max(var(--home-block-space), env(safe-area-inset-top));
+  padding-bottom: max(var(--home-block-space), env(safe-area-inset-bottom));
 }
 
 .content-column {
@@ -101,10 +109,10 @@ a:hover {
 }
 
 .home-page .content-column {
-  min-height: auto;
-  width: 100%;
-  margin-left: 0;
-  margin-right: auto;
+  position: relative;
+  min-height: 0;
+  margin: auto;
+  gap: var(--home-section-gap);
 }
 
 h1,
@@ -267,13 +275,22 @@ h1 {
 }
 
 .signal-lab {
-  margin-top: auto;
-  padding-top: var(--space-lg);
   font-family: "Courier New", Courier, monospace;
 }
 
 .home-page .signal-lab {
-  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.home-page.has-signal .signal-lab {
+  position: static;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .signal-head {
@@ -283,14 +300,12 @@ h1 {
 
 .signal-control {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.65rem;
   font-family: var(--signal-plot-font-family);
   font-size: var(--signal-plot-font-size);
   margin-left: calc(var(--signal-axis-offset-ch) * -1ch);
-  width: calc(
-    (var(--signal-plot-width-ch) + var(--signal-axis-offset-ch)) * 1ch
-  );
 }
 
 .signal-control label {
@@ -309,6 +324,8 @@ h1 {
   place-items: center;
   width: 1.05em;
   height: 1.65em;
+  min-width: 24px;
+  min-height: 24px;
   margin: 0;
   padding: 0;
   border: 0;
@@ -328,6 +345,8 @@ h1 {
 .signal-harmonic-input {
   width: 2.35ch;
   height: 1.45em;
+  min-width: 24px;
+  min-height: 24px;
   margin: 0;
   padding: 0 0.08ch;
   border: 0;
@@ -357,14 +376,38 @@ h1 {
   box-shadow: inset 0 -1px 0 rgba(231, 233, 235, 0.78);
 }
 
+.signal-motion-button {
+  min-width: 24px;
+  min-height: 24px;
+  margin: 0;
+  padding: 0.15em 0.3em;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.signal-motion-button:hover {
+  color: var(--text);
+}
+
+.signal-step-button:focus-visible,
+.signal-motion-button:focus-visible,
+.signal-plot:focus-visible {
+  outline: 1px solid var(--muted);
+  outline-offset: 2px;
+}
+
 .signal-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-sm);
   margin-top: var(--space-sm);
 }
 
 .signal-panel {
+  min-width: 0;
   margin: 0;
   padding: 0;
 }
@@ -391,91 +434,4 @@ h1 {
   letter-spacing: 0;
   white-space: pre;
   tab-size: 2;
-}
-
-@media (max-width: 680px) {
-  .signal-control {
-    width: min(
-      100%,
-      calc((var(--signal-plot-width-ch) + var(--signal-axis-offset-ch)) * 1ch)
-    );
-  }
-
-  .site-shell {
-    padding-left: max(
-      var(--page-inline-space-mobile),
-      env(safe-area-inset-left)
-    );
-    padding-right: max(
-      var(--page-inline-space-mobile),
-      env(safe-area-inset-right)
-    );
-  }
-
-  .ascii-layout {
-    min-height: calc(100dvh - 2.5rem);
-    padding-top: var(--layout-frame-space-mobile);
-  }
-
-  .resource-column {
-    width: 100%;
-  }
-
-  .signal-plot {
-    font-size: 0.68rem;
-  }
-}
-
-@media (min-width: 681px) and (max-height: 899px) {
-  body.home-page {
-    min-height: 100dvh;
-    overflow-y: auto;
-  }
-
-  .home-page .ascii-layout {
-    justify-content: initial;
-  }
-
-  .home-page .signal-lab {
-    display: block;
-    position: static;
-    margin-top: clamp(2rem, 8vh, 4rem);
-    padding-top: 0;
-    transform: none;
-  }
-}
-
-@media (min-width: 681px) and (min-height: 900px) {
-  body.home-page {
-    height: 100dvh;
-    overflow-x: hidden;
-    overflow-y: hidden;
-  }
-
-  .home-page .ascii-layout {
-    padding-top: var(--layout-frame-space);
-    padding-bottom: var(--layout-frame-space);
-    justify-content: initial;
-  }
-
-  .home-page .content-column {
-    width: min(100%, var(--page-column-width));
-    min-height: 100%;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .home-page .signal-lab {
-    display: block;
-    position: fixed;
-    bottom: var(--signal-bottom-offset);
-    left: 50%;
-    width: min(
-      calc(100% - var(--page-inline-space) - var(--page-inline-space)),
-      var(--page-column-width)
-    );
-    margin-top: 0;
-    padding-top: 0;
-    transform: translateX(-50%);
-  }
 }

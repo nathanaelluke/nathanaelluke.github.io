@@ -15,10 +15,11 @@
     <main class="site-shell">
       <section class="ascii-layout" aria-labelledby="site-title">
         <div class="content-column">
-          <h1 id="site-title">nathanael luke</h1>
-          <p class="lede">computer engineer</p>
+          <div class="home-intro">
+            <h1 id="site-title">nathanael luke</h1>
+            <p class="lede">computer engineer</p>
 
-          <pre class="ascii-block" aria-label="Interests and links">
+            <pre class="ascii-block" role="navigation" aria-label="Interests and links">
 ---------
 <a class="topic-link" href="cpp.html">c++ / cuda</a>
 <a class="topic-link" href="signal-processing.html">signal processing</a>
@@ -27,10 +28,10 @@
 ---------
 <a href="https://github.com/nathanaelluke" target="_blank" rel="noreferrer">github</a>
 <a href="https://linkedin.com/in/nathanaelluke" target="_blank" rel="noreferrer">linkedin</a>
-<a href="mailto:nathanaelluke@proton.me">email</a>
-      </pre>
+<a href="mailto:nathanaelluke@proton.me">email</a></pre>
+          </div>
 
-          <section class="signal-lab" aria-label="Fourier series plots">
+          <section class="signal-lab" aria-label="Fourier series plots" inert>
             <div class="signal-head">
               <div class="signal-control">
                 <label for="harmonic-count">harmonics:</label>
@@ -54,7 +55,11 @@
                     inputmode="numeric"
                     pattern="[0-9]*"
                     autocomplete="off"
-                    aria-label="Maximum odd harmonic"
+                    role="spinbutton"
+                    aria-label="Harmonics: maximum odd harmonic"
+                    aria-valuemin="1"
+                    aria-valuemax="99"
+                    aria-valuenow="9"
                     value="9"
                   />
                   <button
@@ -66,6 +71,12 @@
                     +
                   </button>
                 </div>
+                <button
+                  id="signal-motion-toggle"
+                  class="signal-motion-button"
+                  type="button"
+                  aria-label="Pause waveform animation"
+                >pause</button>
               </div>
             </div>
 
@@ -75,6 +86,8 @@
                 <pre
                   id="time-domain-plot"
                   class="signal-plot"
+                  role="img"
+                  tabindex="0"
                   aria-label="Time-domain plot of a partial Fourier-series square-wave approximation"
                 ></pre>
               </figure>
@@ -84,6 +97,8 @@
                 <pre
                   id="frequency-domain-plot"
                   class="signal-plot"
+                  role="img"
+                  tabindex="0"
                   aria-label="Frequency-domain stem plot of odd harmonic amplitudes"
                 ></pre>
               </figure>
